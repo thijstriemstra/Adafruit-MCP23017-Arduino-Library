@@ -28,28 +28,9 @@
 #include <pgmspace.h>
 #endif
 #include "Adafruit_MCP23017.h"
-
-#if ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
-// minihelper to keep Arduino backward compatibility
-static inline void wiresend(uint8_t x) {
-#if ARDUINO >= 100
-  Wire.write((uint8_t)x);
-#else
-  Wire.send(x);
-#endif
-}
-
-static inline uint8_t wirerecv(void) {
-#if ARDUINO >= 100
-  return Wire.read();
-#else
-  return Wire.receive();
-#endif
+Adafruit_MCP23017::Adafruit_MCP23017(TwoWire &wire) : wire(&wire) {
 }
 
 /**
@@ -70,11 +51,11 @@ uint8_t Adafruit_MCP23017::regForPin(uint8_t pin, uint8_t portAaddr,
  */
 uint8_t Adafruit_MCP23017::readRegister(uint8_t addr) {
   // read the current GPINTEN
-  Wire.beginTransmission(MCP23017_ADDRESS | i2caddr);
-  wiresend(addr);
-  Wire.endTransmission();
-  Wire.requestFrom(MCP23017_ADDRESS | i2caddr, 1);
-  return wirerecv();
+  wire->beginTransmission(MCP23017_ADDRESS | i2caddr);
+	wire->write(addr);
+	wire->endTransmission();
+	wire->requestFrom(MCP23017_ADDRESS | i2caddr, 1);
+	return wire->read();
 }
 
 /**
@@ -82,10 +63,10 @@ uint8_t Adafruit_MCP23017::readRegister(uint8_t addr) {
  */
 void Adafruit_MCP23017::writeRegister(uint8_t regAddr, uint8_t regValue) {
   // Write the register
-  Wire.beginTransmission(MCP23017_ADDRESS | i2caddr);
-  wiresend(regAddr);
-  wiresend(regValue);
-  Wire.endTransmission();
+  wire->beginTransmission(MCP23017_ADDRESS | i2caddr);
+	wire->write(regAddr);
+	wire->write(regValue);
+	wire->endTransmission();
 }
 
 /**
@@ -120,7 +101,7 @@ void Adafruit_MCP23017::begin(uint8_t addr) {
   }
   i2caddr = addr;
 
-  Wire.begin();
+  wire->begin();
 
   // set defaults!
   // all inputs on port A and B
@@ -152,13 +133,13 @@ uint16_t Adafruit_MCP23017::readGPIOAB() {
   uint8_t a;
 
   // read the current GPIO output latches
-  Wire.beginTransmission(MCP23017_ADDRESS | i2caddr);
-  wiresend(MCP23017_GPIOA);
-  Wire.endTransmission();
+  wire->beginTransmission(MCP23017_ADDRESS | i2caddr);
+	wire->write(MCP23017_GPIOA);
+	wire->endTransmission();
 
-  Wire.requestFrom(MCP23017_ADDRESS | i2caddr, 2);
-  a = wirerecv();
-  ba = wirerecv();
+  wire->requestFrom(MCP23017_ADDRESS | i2caddr, 2);
+	a = wire->read();
+	ba = wire->read();
   ba <<= 8;
   ba |= a;
 
@@ -173,16 +154,16 @@ uint16_t Adafruit_MCP23017::readGPIOAB() {
 uint8_t Adafruit_MCP23017::readGPIO(uint8_t b) {
 
   // read the current GPIO output latches
-  Wire.beginTransmission(MCP23017_ADDRESS | i2caddr);
+  wire->beginTransmission(MCP23017_ADDRESS | i2caddr);
   if (b == 0)
-    wiresend(MCP23017_GPIOA);
+    wire->write(MCP23017_GPIOA);
   else {
-    wiresend(MCP23017_GPIOB);
+    wire->write(MCP23017_GPIOB);
   }
-  Wire.endTransmission();
+  wire->endTransmission();
 
-  Wire.requestFrom(MCP23017_ADDRESS | i2caddr, 1);
-  return wirerecv();
+  wire->requestFrom(MCP23017_ADDRESS | i2caddr, 1);
+	return wire->read();
 }
 
 /**
@@ -190,11 +171,11 @@ uint8_t Adafruit_MCP23017::readGPIO(uint8_t b) {
  * implementing a multiplexed matrix and want to get a decent refresh rate.
  */
 void Adafruit_MCP23017::writeGPIOAB(uint16_t ba) {
-  Wire.beginTransmission(MCP23017_ADDRESS | i2caddr);
-  wiresend(MCP23017_GPIOA);
-  wiresend(ba & 0xFF);
-  wiresend(ba >> 8);
-  Wire.endTransmission();
+  wire->beginTransmission(MCP23017_ADDRESS | i2caddr);
+	wire->write(MCP23017_GPIOA);
+	wire->write(ba & 0xFF);
+	wire->write(ba >> 8);
+	wire->endTransmission();
 }
 
 /*!
