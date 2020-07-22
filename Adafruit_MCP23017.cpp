@@ -29,11 +29,7 @@
 #endif
 #include "Adafruit_MCP23017.h"
 
-#if ARDUINO >= 100
 #include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
 
 // minihelper to keep Arduino backward compatibility
 static inline void wiresend(uint8_t x) {
@@ -114,13 +110,13 @@ void Adafruit_MCP23017::updateRegisterBit(uint8_t pin, uint8_t pValue,
  * Address selection.
  * @param addr Selected address
  */
-void Adafruit_MCP23017::begin(uint8_t addr) {
+void Adafruit_MCP23017::begin(uint8_t addr, int sdaPin, int sclPin) {
   if (addr > 7) {
     addr = 7;
   }
   i2caddr = addr;
 
-  Wire.begin();
+  Wire.begin(sdaPin, sclPin);
 
   // set defaults!
   // all inputs on port A and B
