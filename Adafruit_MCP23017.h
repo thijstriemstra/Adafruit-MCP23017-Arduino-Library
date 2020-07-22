@@ -23,7 +23,7 @@
  */
 class Adafruit_MCP23017 {
 public:
-  void begin(uint8_t addr, int sdaPin, int sclPin);
+  void begin(uint8_t addr, int sdaPin = -1, int sclPin = -1);
   void begin(void);
 
   void pinMode(uint8_t p, uint8_t d);
